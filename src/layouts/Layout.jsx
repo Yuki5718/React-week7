@@ -32,7 +32,7 @@ export default function Layout() {
     try {
       const res = await axios.post(`${VITE_BASE_URL}/api/user/check`)
       const { success , uid } = res.data
-
+      
       if (success) {
         dispatch(createUserInfo({
           isAuth: true,
@@ -68,10 +68,10 @@ export default function Layout() {
     const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,"$1",);
     if (token !== "") {
       axios.defaults.headers.common['Authorization'] = token;
-    }
 
-    if (!userInfo.isAuth) {
-      checkLogined(token)
+      if (!userInfo.isAuth) {
+        checkLogined(token)
+      }
     }
   },[])
 
