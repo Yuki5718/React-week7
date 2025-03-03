@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import ReactLoading from 'react-loading';
 import OrderForm from '../component/OrderForm';
+import { useDispatch } from 'react-redux';
+import { createMessage } from '../redux/toastSlice';
 
 const { VITE_BASE_URL , VITE_API_PAHT } = import.meta.env
 
 export default function Cart () {
+  const dispatch = useDispatch()
   // 購物車Loading
   const [ isCartLoading , setIsCartLoading ] = useState(false)
 
@@ -18,8 +21,11 @@ export default function Cart () {
       const data = res.data.data
       setCartData(data)
     } catch (error) {
-      console.log(error)
-      alert("購物車資料取得失敗")
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     } finally {
       setIsCartLoading(false)
     }
@@ -50,30 +56,54 @@ export default function Cart () {
     }
 
     try {
-      await axios.put(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/cart/${itemId}`, data)
+      const res = await axios.put(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/cart/${itemId}`, data)
+      const {success , message} = res.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     } catch (error) {
-      console.log(error)
-      alert("數量變更失敗")
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     }
   }
   
   // 刪除購物車(單一)
   const deleteCartItem = async(itemId) => {
     try {
-      await axios.delete(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/cart/${itemId}`)
+      const res = await axios.delete(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/cart/${itemId}`)
+      const {success , message} = res.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     } catch (error) {
-      console.log(error)
-      alert("刪除購物車失敗")
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     }
   }
 
   // 刪除購物車(全部)
   const deleteCartAll = async() => {
     try {
-      await axios.delete(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/carts`)
+      const res = await axios.delete(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/carts`)
+      const {success , message} = res.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     } catch (error) {
-      console.log(error)
-      alert("刪除購物車失敗")
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     }
   }
 
@@ -161,7 +191,7 @@ export default function Cart () {
               </tbody>
               <tfoot className="fs-3">
                 <tr>
-                  <th scope="row" colspan="4" className="text-end">總計</th>
+                  <th scope="row" colSpan="4" className="text-end">總計</th>
                   <td className="text-end fw-bold">${cartData.total}</td>
                   <td></td>
                 </tr>

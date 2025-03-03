@@ -2,10 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import axios from 'axios';
 import ReactLoading from 'react-loading';
 import { Link, useParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { createMessage } from '../redux/toastSlice';
 
 const { VITE_BASE_URL , VITE_API_PAHT } = import.meta.env
 
 export default function ProductDetail () {
+  const dispatch = useDispatch()
   // 全螢幕Loading
   const [ isScreenLoading , setIsScreenLoading ] = useState(false)
   // 前往購物車
@@ -22,8 +25,11 @@ export default function ProductDetail () {
       const res = await axios.get(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/product/${id}`)
       setProduct(res.data.product)
     } catch (error) {
-      console.log(error)
-      alert("取得產品資料錯誤")
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     } finally {
       setIsScreenLoading(false)
     }
@@ -60,11 +66,19 @@ export default function ProductDetail () {
       }
     }
     try {
-      await axios.post(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/cart`, data)
+      const res = await axios.post(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/cart`, data)
+      const {success , message} = res.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
       setGoToCart(true)
     } catch (error) {
-      console.log(error)
-      alert("加入購物車失敗")
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     } finally {
       setIsScreenLoading(false)
     }
@@ -78,7 +92,6 @@ export default function ProductDetail () {
   // 頁面初始化 init
   useEffect(()=>{
     getProduct()
-    // setGoToCart(false)
   },[])
 
   return (
