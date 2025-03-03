@@ -2,22 +2,21 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import ReactLoading from 'react-loading';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch , useSelector } from 'react-redux';
 import { createMessage } from '../redux/toastSlice';
+import { setScreenLoadingStart , setScreenLoadingEnd , setBtnLoadingStart , setBtnLoadingEnd } from "../redux/loadingSlice";
 
 const { VITE_BASE_URL , VITE_API_PAHT } = import.meta.env
 
 export default function Products () {
   const dispatch = useDispatch()
-  // 全螢幕Loading
-  const [ isScreenLoading , setIsScreenLoading ] = useState(false)
   // 按鈕顯示Loading
-  const [ isCartLoading , setIsCartLoading ] = useState(false)
+  const isBtnLoading = useSelector((state) => state.loading.BtnLoading.isLoading)
 
   // 取得產品資料
   const [ products , setProducts ] = useState([])
   const getProducts = async() => {
-    setIsScreenLoading(true)
+    dispatch(setScreenLoadingStart())
     try {
       const res = await axios.get(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/products/all`)
       setProducts(res.data.products)
@@ -28,14 +27,14 @@ export default function Products () {
         status: success ? "success" : "failed"
       }))
     } finally {
-      setIsScreenLoading(false)
+      dispatch(setScreenLoadingEnd())
     }
   }
   // 取得產品資料
 
   // 加入購物車
   const addCart = async(id, qty=1 ) => {
-    setIsCartLoading(true)
+    dispatch(setBtnLoadingStart())
     const data = { 
       data : {
         "product_id": id,
@@ -56,7 +55,7 @@ export default function Products () {
         status: success ? "success" : "failed"
       }))
     } finally {
-      setIsCartLoading(false)
+      dispatch(setBtnLoadingEnd())
     }
   }
 
@@ -64,8 +63,6 @@ export default function Products () {
     await addCart(id)
   }
   // 加入購物車
-
-  
 
   // 頁面初始化 init
   useEffect(()=>{
@@ -92,16 +89,16 @@ export default function Products () {
                     <div className="d-flex justify-content-between">
                       <Link
                         to={`/products/${product.id}`}
-                        className={`btn btn-primary w-100 me-2 ${isCartLoading && ("disabled")}`}
+                        className={`btn btn-primary w-100 me-2 ${isBtnLoading && ("disabled")}`}
                       >
                         查看細節
                       </Link>
                       <button
-                        className={`btn btn-primary w-100 ${isCartLoading && ("disabled")} d-flex justify-content-center`}
+                        className={`btn btn-primary w-100 ${isBtnLoading && ("disabled")} d-flex justify-content-center`}
                         onClick={() => handleAddCart(product.id)}
                       >
                         點我下單
-                        {isCartLoading && (
+                        {isBtnLoading && (
                           <ReactLoading 
                             className="ms-2"
                             type={"spin"}
@@ -118,18 +115,6 @@ export default function Products () {
           ))}
         </div>
       </div>
-
-      { isScreenLoading && (<div
-        className="d-flex justify-content-center align-items-center"
-        style={{
-          position: "fixed",
-          inset: 0,
-          backgroundColor: "rgba(255,255,255,0.3)",
-          zIndex: 999,
-        }}
-      >
-        <ReactLoading type="spin" color="black" width="4rem" height="4rem" />
-      </div>)}
     </>
   )
 };

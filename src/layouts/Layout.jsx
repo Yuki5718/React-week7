@@ -6,6 +6,7 @@ import Toast from "../component/Toast";
 import { useDispatch , useSelector } from 'react-redux';
 import { createUserInfo , removeUserInfo } from '../redux/userInfoSlice';
 import { createMessage } from '../redux/toastSlice';
+import { setScreenLoadingStart , setScreenLoadingEnd } from "../redux/loadingSlice";
 
 const { VITE_BASE_URL } = import.meta.env
 
@@ -22,13 +23,12 @@ export default function Layout() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const userInfo = useSelector((state) => state.userInfo)
-  // console.log(userInfo)
   // 全螢幕Loading
-  const [ isScreenLoading , setIsScreenLoading ] = useState(false)
+  const isScreenLoading = useSelector((state) => state.loading.ScreenLoading.isLoading)
 
   // 驗證登入
   const checkLogined = async(token) => {
-    setIsScreenLoading(true)
+    dispatch(setScreenLoadingStart())
     try {
       const res = await axios.post(`${VITE_BASE_URL}/api/user/check`)
       const { success , uid } = res.data
@@ -59,7 +59,7 @@ export default function Layout() {
         status: success ? "success" : "failed"
       }))
     } finally {
-      setIsScreenLoading(false)
+      dispatch(setScreenLoadingEnd())
     }
   }
 
@@ -85,7 +85,7 @@ export default function Layout() {
   
   // 登出功能
   const handleLogout = async() => {
-    setIsScreenLoading(true)
+    dispatch(setScreenLoadingStart())
     try {
       await axios.post(`${VITE_BASE_URL}/logout`)
       document.cookie = 'hexToken=; max-age=0';
@@ -99,7 +99,7 @@ export default function Layout() {
         status: success ? "success" : "failed"
       }))
     } finally {
-      setIsScreenLoading(false)
+      dispatch(setScreenLoadingEnd())
     }
   }
 

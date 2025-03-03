@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch , useSelector } from 'react-redux';
 import { createMessage } from '../redux/toastSlice';
 import { createUserInfo } from '../redux/userInfoSlice';
+import { setScreenLoadingStart , setScreenLoadingEnd } from "../redux/loadingSlice";
 
 const { VITE_BASE_URL } = import.meta.env
 
@@ -14,7 +15,7 @@ export default function Login() {
   const userInfo = useSelector((state) => state.userInfo)
 
   // 全螢幕Loading
-  const [ isScreenLoading , setIsScreenLoading ] = useState(false)
+  const isScreenLoading = useSelector((state) => state.loading.ScreenLoading.isLoading)
 
   const {
     register,
@@ -25,7 +26,7 @@ export default function Login() {
   })
   
   const onSubmit = async(data) => {
-    setIsScreenLoading(true)
+    dispatch(setScreenLoadingStart())
     try {
       const res = await axios.post(`${VITE_BASE_URL}/admin/signin`,data)
       const { token , expired , uid } = res.data
@@ -43,7 +44,7 @@ export default function Login() {
         status: success ? "success" : "failed"
       }))
     } finally {
-      setIsScreenLoading(false)
+      dispatch(setScreenLoadingEnd())
     }
   }
 

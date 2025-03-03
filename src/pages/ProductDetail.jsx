@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import axios from 'axios';
-import ReactLoading from 'react-loading';
 import { Link, useParams } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch , useSelector } from 'react-redux';
 import { createMessage } from '../redux/toastSlice';
+import { setScreenLoadingStart , setScreenLoadingEnd } from "../redux/loadingSlice";
 
 const { VITE_BASE_URL , VITE_API_PAHT } = import.meta.env
 
 export default function ProductDetail () {
   const dispatch = useDispatch()
   // 全螢幕Loading
-  const [ isScreenLoading , setIsScreenLoading ] = useState(false)
+  const isScreenLoading = useSelector((state) => state.loading.ScreenLoading.isLoading)
   // 前往購物車
   const [ goToCart , setGoToCart ] = useState(false)
 
@@ -20,7 +20,7 @@ export default function ProductDetail () {
   // 取得產品資料
   const [ product , setProduct ] = useState([])
   const getProduct = async() => {
-    setIsScreenLoading(true)
+    dispatch(setScreenLoadingStart())
     try {
       const res = await axios.get(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/product/${id}`)
       setProduct(res.data.product)
@@ -31,7 +31,7 @@ export default function ProductDetail () {
         status: success ? "success" : "failed"
       }))
     } finally {
-      setIsScreenLoading(false)
+      dispatch(setScreenLoadingEnd())
     }
   }
   // 取得產品資料
@@ -58,7 +58,7 @@ export default function ProductDetail () {
 
   // 加入購物車
   const addCart = async(id, qty=1 ) => {
-    setIsScreenLoading(true)
+    dispatch(setScreenLoadingStart())
     const data = { 
       data : {
         "product_id": id,
@@ -80,7 +80,7 @@ export default function ProductDetail () {
         status: success ? "success" : "failed"
       }))
     } finally {
-      setIsScreenLoading(false)
+      dispatch(setScreenLoadingEnd())
     }
   }
 
@@ -148,18 +148,6 @@ export default function ProductDetail () {
           </div>
         </div>
       </div>
-    
-      { isScreenLoading && (<div
-        className="d-flex justify-content-center align-items-center"
-        style={{
-          position: "fixed",
-          inset: 0,
-          backgroundColor: "rgba(255,255,255,0.3)",
-          zIndex: 999,
-        }}
-      >
-        <ReactLoading type="spin" color="black" width="4rem" height="4rem" />
-      </div>)}
     </>
   )
 }
