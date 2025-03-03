@@ -14,12 +14,8 @@ export default function ProductModal({getProducts}) {
   const productModalRef = useRef(null);
   
   const dispatch = useDispatch()
-
-  const allModalState = useSelector((state) => state.modalState)
-
   const { isModalOpen , modalMode , modalState } = useSelector((state) => state.modalState)
-  
-  console.log(allModalState)
+  const { pagination } = useSelector((state)=>state.products)
 
   useEffect(() => {
     // 建立Modal實例
@@ -102,8 +98,7 @@ export default function ProductModal({getProducts}) {
         text: message,
         status: success ? "success" : "failed"
       }))
-      // getProducts(pageInfo.current_page)
-      getProducts()
+      getProducts(pagination.current_page)
       dispatch(closeModal())
     } catch (error) {
       console.log(error)
