@@ -1,19 +1,36 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 
 const initialState = {
-  messages: [
-    {
-      id: Date.now(),
-      text: "hello",
-      status: "success",
-    },
-  ],
+  messages: [],
 };
 
 
 const toastSlice = createSlice({
   name: "toast",
-  initialState
+  initialState,
+  reducers: {
+    createMessage(state, action) {
+      console.log(state,action);
+      const { text , status } = action.payload;
+      const id = Date.now();
+
+      state.messages.push({
+        id,
+        text,
+        status
+      })
+    },
+    removeMessage(state, action) {
+      const message_id = action.payload
+      
+      const index = state.messages.findIndex((message) => message.id === message_id)
+      if (index !== -1) {
+        state.messages.splice(index, 1)
+      }
+    }
+  }
 })
+// createAsyncThunk
+export const { createMessage , removeMessage } = toastSlice.actions;
 
 export default toastSlice.reducer;
