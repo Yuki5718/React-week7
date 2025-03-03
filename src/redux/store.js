@@ -3,6 +3,7 @@ import toastReducer from "./toastSlice"
 import userInfoReducer from "./userInfoSlice"
 import loadingReducer from "./loadingSlice"
 import modalStateReducer from "./modalStateSlice"
+import productsReducer from "./productsSlice"
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     userInfo : userInfoReducer,
     loading: loadingReducer,
     modalState: modalStateReducer,
+    products: productsReducer,
   }
 })
 
