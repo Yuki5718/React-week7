@@ -1,8 +1,11 @@
-import { NavLink, Outlet , useNavigate, useParams } from "react-router-dom"
+import { NavLink, Outlet , useNavigate , useLocation} from "react-router-dom"
 import { useEffect, useState } from 'react';
 import ReactLoading from 'react-loading';
 import axios from 'axios';
 import Toast from "../component/Toast";
+import { useDispatch , useSelector } from 'react-redux';
+import { createUserInfo , removeUserInfo } from '../redux/userInfoSlice';
+import { createMessage } from '../redux/toastSlice';
 
 const { VITE_BASE_URL } = import.meta.env
 
@@ -15,36 +18,86 @@ const routes = [
 ];
 
 export default function Layout() {
+  const location = useLocation();
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const userInfo = useSelector((state) => state.userInfo)
+  // console.log(userInfo)
   // 全螢幕Loading
   const [ isScreenLoading , setIsScreenLoading ] = useState(false)
-  // 是否登入
-  const [ isAuth , setIsAuth ] = useState(false)
-  // user id
-  const [ userId , setUserId ] = useState("")
 
-  let { id : pageId } = useParams()
+  // 驗證登入
+  const checkLogined = async(token) => {
+    setIsScreenLoading(true)
+    try {
+      const res = await axios.post(`${VITE_BASE_URL}/api/user/check`)
+      const { success , uid } = res.data
+
+      if (success) {
+        dispatch(createUserInfo({
+          isAuth: true,
+          token,
+          uid
+        }))
+
+        if (location.pathname === "/") {
+          navigate(`/user/${uid}`)
+        }
+      } else {
+        document.cookie = 'hexToken=; max-age=0';
+        dispatch(removeUserInfo())
+        dispatch(createMessage({
+          text: "驗證錯誤，請重新登入",
+          status: success ? "success" : "failed"
+        }))
+        navigate("/login")
+      }
+    } catch (error) {
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
+    } finally {
+      setIsScreenLoading(false)
+    }
+  }
+
+  // 初始化驗證登入
+  useEffect(() => {
+    const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,"$1",);
+    if (token !== "") {
+      axios.defaults.headers.common['Authorization'] = token;
+    } else {
+      return
+    }
+
+    if (!userInfo.isAuth) {
+      checkLogined(token)
+    }
+  },[])
 
   useEffect(() => {
-    const uid = document.cookie.replace(/(?:(?:^|.*;\s*)uid\s*\=\s*([^;]*).*$)|^.*$/,"$1",);
-    if (pageId === uid) {
-      setUserId(uid)
-      setIsAuth(true)
+    if ((userInfo.isAuth) && (location.pathname === "/")) {
+      navigate(`/user/${userInfo.uid}`)
     }
-  },[ pageId ])
+  },[location])
   
-  const navigate = useNavigate()
-
+  // 登出功能
   const handleLogout = async() => {
     setIsScreenLoading(true)
     try {
       await axios.post(`${VITE_BASE_URL}/logout`)
       document.cookie = 'hexToken=; max-age=0';
       document.cookie = 'uid=; max-age=0';
-      setIsAuth(false)
+      dispatch(removeUserInfo()) // 移除UserInfo狀態
       navigate("/logout");
     } catch (error) {
-      console.log(error)
-      alert("登出失敗")
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     } finally {
       setIsScreenLoading(false)
     }
@@ -56,12 +109,12 @@ export default function Layout() {
         <div className="container">
           <ul className="navbar-nav flex-row gap-5 fs-5 w-100">
             { routes.map((route) => (
-              <li key={(isAuth && (route.path === "/")) ? (userId) : (route.path)}
-                className={`nav-item ${(route.path === "/login") ? ("ms-auto") : ("")} ${((route.path === "/login") && isAuth) ? ("d-none") : ("")}`}>
-                <NavLink to={(isAuth && (route.path === "/")) ? (userId) : (route.path)} aria-current="page" className="nav-link fw-bold">{route.name}</NavLink>
+              <li key={(userInfo.isAuth && (route.path === "/")) ? (`/user/${userInfo.uid}`) : (route.path)}
+                className={`nav-item ${(route.path === "/login") ? ("ms-auto") : ("")} ${((route.path === "/login") && userInfo.isAuth) ? ("d-none") : ("")}`}>
+                <NavLink to={route.path} aria-current="page" className="nav-link fw-bold">{route.name}</NavLink>
               </li>            
             ))}
-            { isAuth && (<li className="nav-item ms-auto"><button className="nav-link fw-bold" onClick={handleLogout}>登出</button></li>)}            
+            { userInfo.isAuth && (<li className="nav-item ms-auto"><button className="nav-link fw-bold" onClick={handleLogout}>登出</button></li>)}            
           </ul>
         </div>
       </nav>
