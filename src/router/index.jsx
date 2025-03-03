@@ -9,6 +9,7 @@ import Logout from '../pages/Logout';
 import NotFound from '../pages/NotFound';
 import AdminLayout from '../layouts/AdminLayout';
 import AdminHome from '../pages_admin/AdminHome';
+import ProductPage from '../pages_admin/ProductsPage';
 
 const router = createHashRouter([
   {
@@ -45,7 +46,10 @@ const router = createHashRouter([
         path:'logout',
         element: <Logout />
       },
-      
+      {
+        path:'*',
+        element: <NotFound />
+      }
     ]
   },
   {
@@ -54,13 +58,17 @@ const router = createHashRouter([
     children: [
       {
         path: '',
-        element: <AdminHome />
+        element: <AdminHome />,
+      },
+      {
+        path: 'productsPage',
+        element: <ProductPage />
+      },
+      {
+        path:'*',
+        element: <NotFound />
       }
     ]
-  },
-  {
-    path:'*',
-    element: <NotFound />
   }
 ])
 
