@@ -1,15 +1,20 @@
 import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { useSelector } from 'react-redux';
 
 export default function NotFound () {
   const navigate = useNavigate()
   const userInfo = useSelector((state) => state.userInfo)
+  const location = useLocation()
 
   useEffect(() => {
     setTimeout(() => {
       if (userInfo.isAuth) {
-        navigate(`/user/${userInfo.uid}`)
+        if (location.pathname.includes("/admin")) {
+          navigate("/admin")
+        } else {
+          navigate(`/user/${userInfo.uid}`)
+        }        
       } else {
         navigate("/")
       }
