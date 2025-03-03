@@ -1,5 +1,5 @@
-import { NavLink, Outlet , useNavigate , useLocation} from "react-router-dom"
-import { useEffect, useState } from 'react';
+import { NavLink, Outlet , useNavigate , useLocation } from "react-router-dom"
+import { useEffect } from 'react';
 import ReactLoading from 'react-loading';
 import axios from 'axios';
 import Toast from "../component/Toast";
@@ -14,8 +14,8 @@ const routes = [
   { path: "/", name: "首頁" },
   { path: "/products", name: "產品列表" },
   { path: "/cart", name: "購物車" },
+  { path: "/admin" , name: "管理後臺"},
   { path: "/login", name: "登入" },
-  { path: "/admin" , name: "管理後臺"}
 ];
 
 export default function Layout() {
@@ -68,8 +68,6 @@ export default function Layout() {
     const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,"$1",);
     if (token !== "") {
       axios.defaults.headers.common['Authorization'] = token;
-    } else {
-      return
     }
 
     if (!userInfo.isAuth) {
@@ -108,13 +106,37 @@ export default function Layout() {
       <nav className="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
         <div className="container">
           <ul className="navbar-nav flex-row gap-5 fs-5 w-100">
-            { routes.map((route) => (
-              <li key={(userInfo.isAuth && (route.path === "/")) ? (`/user/${userInfo.uid}`) : (route.path)}
-                className={`nav-item ${(route.path === "/login") ? ("ms-auto") : ("")} ${((route.path === "/login") && userInfo.isAuth) ? ("d-none") : ("")}`}>
-                <NavLink to={route.path} aria-current="page" className="nav-link fw-bold">{route.name}</NavLink>
-              </li>            
-            ))}
-            { userInfo.isAuth && (<li className="nav-item ms-auto"><button className="nav-link fw-bold" onClick={handleLogout}>登出</button></li>)}            
+            { routes.map((route) => {
+              if ((route.path === "/admin") && !userInfo.isAuth) {
+                return
+              } 
+              else if ((route.path === "/login") && userInfo.isAuth) {
+                return
+              }
+              else {
+                return (
+                  <li
+                    key={route.path}
+                    className={`nav-item 
+                      ${(route.path === "/login") ? ("ms-auto") : ("")}`}
+                  >
+                    <NavLink
+                      to={(userInfo.isAuth && (route.path === "/")) ? (`/user/${userInfo.uid}`) : (route.path)}
+                      aria-current="page"
+                      className="nav-link fw-bold"
+                    >
+                      {route.name}
+                    </NavLink>
+                  </li> 
+                )
+              }
+            })}
+            {
+              userInfo.isAuth && (
+                <li className="nav-item ms-auto">
+                  <button className="nav-link fw-bold" onClick={handleLogout}>登出</button>
+                </li>)
+            }            
           </ul>
         </div>
       </nav>
