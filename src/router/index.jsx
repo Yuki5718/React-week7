@@ -18,18 +18,22 @@ const router = createHashRouter([
       {
         path:'',
         element: <Home />,
-      },
-      {
-        path:':id',
-        element: <Home />
+        children: [
+          {
+            path:'/user/:id',
+            element: <Home />
+          },
+        ]
       },
       {
         path:'products',
         element: <Products />,
-      },
-      {
-        path:'products/:id',
-        element: <ProductDetail />
+        children: [
+          {
+            path:'products/:id',
+            element: <ProductDetail />
+          },
+        ]
       },
       {
         path:'cart',
@@ -43,14 +47,7 @@ const router = createHashRouter([
         path:'logout',
         element: <Logout />
       },
-      {
-        path:'404',
-        element: <NotFound />
-      },
-      {
-        path:'*',
-        element: <NotFound />
-      }
+      
     ]
   },
   {
@@ -62,6 +59,10 @@ const router = createHashRouter([
         element: <AdminHome />
       }
     ]
+  },
+  {
+    path:'*',
+    element: <NotFound />
   }
 ])
 
