@@ -3,14 +3,18 @@ import { useForm } from "react-hook-form"
 import ReactLoading from 'react-loading';
 import axios from "axios"
 import { useNavigate } from "react-router-dom";
+import { useDispatch , useSelector } from 'react-redux';
+import { createMessage } from '../redux/toastSlice';
+import { createUserInfo } from '../redux/userInfoSlice';
 
 const { VITE_BASE_URL } = import.meta.env
 
 export default function Login() {
+  const dispatch = useDispatch()
+  const userInfo = useSelector((state) => state.userInfo)
+
   // 全螢幕Loading
   const [ isScreenLoading , setIsScreenLoading ] = useState(false)
-  // 是否登入
-  const [ isAuth , setIsAuth ] = useState(false)
 
   const {
     register,
@@ -27,11 +31,17 @@ export default function Login() {
       const { token , expired , uid } = res.data
       // 寫入cookie
       document.cookie = `hexToken=${token}; expired=${new Date(expired)};`
-      document.cookie = `uid=${uid}`
-      setIsAuth(true)
+      dispatch(createUserInfo({
+        isAuth: true,
+        token,
+        uid
+      }))
     } catch (error) {
-      console.log(error)
-      alert("登入失敗，請重新輸入帳號密碼")
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     } finally {
       setIsScreenLoading(false)
     }
@@ -40,19 +50,18 @@ export default function Login() {
   // 登入後重新導向首頁
   const navigate = useNavigate()
   useEffect(() => {
-    if (isAuth) {
-      const uid = document.cookie.replace(/(?:(?:^|.*;\s*)uid\s*\=\s*([^;]*).*$)|^.*$/,"$1",);
+    if (userInfo.isAuth) {
       setTimeout(() => {
-        navigate(`/${uid}`);
+        navigate(`/user/${userInfo.uid}`)
       }, 3000);
     }
-  },[isAuth])
+  },[userInfo])
   
   return (
     <>
       <div className="container py-5">
         <div className="row justify-content-center">
-          {isAuth ? (
+          {userInfo.isAuth ? (
             <div className="col-4">
               <h1 className="text-center mb-3">登入成功</h1>
               <h1 className="text-center">3秒後回到首頁</h1>
@@ -103,7 +112,6 @@ export default function Login() {
               </form>
             </div>
           )}
-          
         </div>
       </div>
 
