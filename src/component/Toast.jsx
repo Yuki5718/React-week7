@@ -7,7 +7,6 @@ export default function Toast () {
   const dispatch = useDispatch()
 
   const messages = useSelector((state) => state.toast.messages)
-  console.log(messages);
 
   const toastRefs = useRef({})
 
