@@ -4,9 +4,11 @@ import ReactLoading from 'react-loading';
 import axios from 'axios';
 import Toast from "../component/Toast";
 import { useDispatch , useSelector } from 'react-redux';
-import { removeUserInfo } from '../redux/userInfoSlice';
+import { createUserInfo , removeUserInfo } from '../redux/userInfoSlice';
 import { createMessage } from '../redux/toastSlice';
 import { setScreenLoadingStart , setScreenLoadingEnd } from "../redux/loadingSlice";
+
+const { VITE_BASE_URL } = import.meta.env
 
 const routes = [
   {path: "/admin" , name: "後台首頁"},
@@ -15,11 +17,62 @@ const routes = [
 ]
 
 export default function AdminLayout () {
-
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
   const userInfo = useSelector((state) => state.userInfo)
 
   // 全螢幕Loading
   const isScreenLoading = useSelector((state) => state.loading.ScreenLoading.isLoading)
+
+  // 驗證登入
+  const checkLogined = async(token) => {
+    dispatch(setScreenLoadingStart())
+    try {
+      const res = await axios.post(`${VITE_BASE_URL}/api/user/check`)
+      const { success , uid } = res.data
+
+      if (success) {
+        dispatch(createUserInfo({
+          isAuth: true,
+          token,
+          uid
+        }))
+      } else {
+        document.cookie = 'hexToken=; max-age=0';
+        dispatch(removeUserInfo())
+        dispatch(createMessage({
+          text: "驗證錯誤，請重新登入",
+          status: success ? "success" : "failed"
+        }))
+        navigate("/login")
+      }
+    } catch (error) {
+      console.log(error)
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
+    } finally {
+      dispatch(setScreenLoadingEnd())
+    }
+  }
+
+  // 初始化驗證登入
+  useEffect(() => {
+    const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,"$1",);
+    if (token !== "") {
+      axios.defaults.headers.common['Authorization'] = token;
+
+      if (!userInfo.isAuth) {
+        checkLogined(token)
+      }
+    } else {
+      setTimeout(() => {
+        navigate("/404")
+      }, 2000);
+    }
+  },[])
 
   // 登出功能
   const handleLogout = async() => {
@@ -31,6 +84,7 @@ export default function AdminLayout () {
       dispatch(removeUserInfo()) // 移除UserInfo狀態
       navigate("/logout");
     } catch (error) {
+      console.log(error)
       const {success , message} = error.response.data
       dispatch(createMessage({
         text: message,
@@ -46,8 +100,8 @@ export default function AdminLayout () {
         <div className="container">
           <ul className="navbar-nav flex-row gap-5 fs-5 w-100">
             { routes.map((route) => (
-              <li key={(userInfo.isAuth && (route.path === "/")) ? (`/user/${userInfo.uid}`) : (route.path)}
-                className={`nav-item ${(route.path === "/login") ? ("ms-auto") : ("")} ${((route.path === "/login") && userInfo.isAuth) ? ("d-none") : ("")}`}>
+              <li key={route.path}
+                className={`nav-item`}>
                 <NavLink to={route.path} aria-current="page" className="nav-link fw-bold">{route.name}</NavLink>
               </li>            
             ))}
