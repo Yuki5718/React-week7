@@ -7,24 +7,26 @@ import { useDispatch , useSelector } from 'react-redux';
 import { createMessage } from '../redux/toastSlice';
 import { setScreenLoadingStart , setScreenLoadingEnd } from "../redux/loadingSlice";
 import { editProduct } from '../redux/modalStateSlice';
+import { setProductsState } from '../redux/productsSlice';
 
 const { VITE_BASE_URL , VITE_API_PAHT } = import.meta.env;
 
 export default function ProductPage () {
   const dispatch = useDispatch()
+  const { products : productsState , pagination : paginationState } = useSelector((state)=>state.products)
 
-  // 產品資料狀態
-  const [ products , setProducts ] = useState([]);
-  // 產品分頁狀態
-  const [ pagination , setPagination ] = useState([])
   // 取得產品資料
   const getProducts = async (page = 1) => {
     dispatch(setScreenLoadingStart())
     try {
       const res = await axios.get(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/admin/products?page=${page}`);
-      setProducts(res.data.products);
-      setPagination(res.data.pagination);
+
+      const { products , pagination } = res.data
+      const productsState = { products, pagination }
+      dispatch(setProductsState(productsState))
+      
     } catch (error) {
+      console.log(error)
       const {success , message} = error.response.data
       dispatch(createMessage({
         text: message,
@@ -47,10 +49,7 @@ export default function ProductPage () {
 
   // Modal開關功能
   const handleOpenProductModal = ( mode , product ) => {
-    const state = {
-      mode,
-      product
-    }
+    const state = { mode, product }
     dispatch(editProduct(state))
   };
   
@@ -67,6 +66,7 @@ export default function ProductPage () {
       }))
       getProducts()
     } catch (error) {
+      console.log(error)
       const {success , message} = error.response.data
       dispatch(createMessage({
         text: message,
@@ -117,7 +117,7 @@ export default function ProductPage () {
                 </tr>
               </thead>
               <tbody>
-                {products.map((product) => (
+                {productsState?.map((product) => (
                   <tr key={product.id} className="align-middle">
                     <th scope="row">{product.title}</th>
                     <td>{product.origin_price}</td>
@@ -140,8 +140,6 @@ export default function ProductPage () {
       </div>
 
       <Pagination 
-        products={products}
-        pageInfo={pagination}
         getProducts={getProducts}
       />
 
