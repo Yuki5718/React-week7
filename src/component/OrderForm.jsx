@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import ReactLoading from 'react-loading';
 import axios from 'axios';
-
+import { useDispatch , useSelector } from 'react-redux';
+import { createMessage } from '../redux/toastSlice';
+import { setBtnLoadingEnd, setBtnLoadingStart } from '../redux/loadingSlice';
 const { VITE_BASE_URL , VITE_API_PAHT } = import.meta.env
 
 function OrderForm({
@@ -10,8 +12,9 @@ function OrderForm({
   getCartData,
   isCartLoading
 }) {
-  // 表單按鈕Loading效果
-  const [ formBtnLoading , setFormBtnLoading ] = useState(false)
+  const dispatch = useDispatch()
+  // 全螢幕Loading
+  const isBtnLoading = useSelector((state) => state.loading.BtnLoading.isLoading)
 
   // oderId狀態
   const [ oderId , setOderId ] = useState(null)
@@ -62,30 +65,41 @@ function OrderForm({
   }
 
   const handleOder = async(data) => {
-    setFormBtnLoading(true)
+    dispatch(setBtnLoadingStart())
     try {
       const res = await axios.post(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/order`, data)
       setOderId(res.data.orderId)
       getCartData()
       reset()
     } catch (error) {
-      console.log(error)
-      alert("訂單送出失敗")
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     } finally {
-      setFormBtnLoading(false)
+      dispatch(setBtnLoadingEnd())
     }
   }
 
   const handlePay = async(oderId) => {
-    setFormBtnLoading(true)
+    dispatch(setBtnLoadingStart())
     try {
       const res = await axios.post(`${VITE_BASE_URL}/api/${VITE_API_PAHT}/pay/${oderId}`)
+      const { success, message } = res.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
       setOderId(null)
     } catch (error) {
-      console.log(error)
-      alert("付款失敗")
+      const {success , message} = error.response.data
+      dispatch(createMessage({
+        text: message,
+        status: success ? "success" : "failed"
+      }))
     } finally {
-      setFormBtnLoading(false)
+      dispatch(setBtnLoadingEnd())
     }
   }
 
@@ -159,7 +173,7 @@ function OrderForm({
       </div>
       <div className="d-flex justify-content-center">
         <button type="submit" className={`btn btn-primary d-flex align-items-center gap-2 ${(isCartLoading || (cartData?.carts?.length < 1) ) && ("disabled")}`} >送出訂單
-          {(formBtnLoading && (oderId === null)) && (<ReactLoading
+          {(isBtnLoading && (oderId === null)) && (<ReactLoading
             type={"spin"}
             color={"#000"}
             height={"1.5rem"}
@@ -170,7 +184,7 @@ function OrderForm({
     </form>
     <div className="d-flex justify-content-center mt-3">
       <button type="button" className={`btn btn-success d-flex align-items-center gap-2 ${(isCartLoading || (oderId === null)) && ("disabled")}`} onClick={()=>handlePay(oderId)}>點擊付款
-        {(formBtnLoading && (oderId !== null)) && (<ReactLoading
+        {(isBtnLoading && (oderId !== null)) && (<ReactLoading
           type={"spin"}
           color={"#000"}
           height={"1.5rem"}
