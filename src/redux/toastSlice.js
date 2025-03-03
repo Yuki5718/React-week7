@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit"
 
 const initialState = {
   messages: [],
@@ -10,7 +10,6 @@ const toastSlice = createSlice({
   initialState,
   reducers: {
     createMessage(state, action) {
-      console.log(state,action);
       const { text , status } = action.payload;
       const id = Date.now();
 
