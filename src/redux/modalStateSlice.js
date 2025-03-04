@@ -15,7 +15,6 @@ const defaultModalState = {
   can_hot: 0,
 };
 
-
 const modalStateSlice = createSlice({
   name: "modalState",
   initialState: {

@@ -4,7 +4,6 @@ const initialState = {
   messages: [],
 };
 
-
 const toastSlice = createSlice({
   name: "toast",
   initialState,
@@ -29,7 +28,7 @@ const toastSlice = createSlice({
     }
   }
 })
-// createAsyncThunk
+
 export const { createMessage , removeMessage } = toastSlice.actions;
 
 export default toastSlice.reducer;

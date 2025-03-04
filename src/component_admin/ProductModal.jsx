@@ -1,11 +1,9 @@
 import { useState , useRef , useEffect} from 'react'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
-// import Swal from 'sweetalert2'
 import { useDispatch , useSelector } from 'react-redux';
 import { createMessage } from '../redux/toastSlice';
-import { setScreenLoadingStart , setScreenLoadingEnd } from "../redux/loadingSlice";
-import { closeModal, editProduct } from '../redux/modalStateSlice';
+import { closeModal } from '../redux/modalStateSlice';
 
 const { VITE_BASE_URL , VITE_API_PAHT } = import.meta.env;
 

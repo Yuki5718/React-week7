@@ -1,6 +1,5 @@
-import { useEffect , useState } from "react"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import ReactLoading from 'react-loading';
 import axios from "axios"
 import { useNavigate } from "react-router-dom";
 import { useDispatch , useSelector } from 'react-redux';
@@ -13,9 +12,6 @@ const { VITE_BASE_URL } = import.meta.env
 export default function Login() {
   const dispatch = useDispatch()
   const userInfo = useSelector((state) => state.userInfo)
-
-  // 全螢幕Loading
-  const isScreenLoading = useSelector((state) => state.loading.ScreenLoading.isLoading)
 
   const {
     register,
@@ -115,18 +111,6 @@ export default function Login() {
           )}
         </div>
       </div>
-
-      { isScreenLoading && (<div
-        className="d-flex justify-content-center align-items-center"
-        style={{
-          position: "fixed",
-          inset: 0,
-          backgroundColor: "rgba(255,255,255,0.3)",
-          zIndex: 999,
-        }}
-      >
-        <ReactLoading type="spin" color="black" width="4rem" height="4rem" />
-      </div>)}
     </>
   )
 };

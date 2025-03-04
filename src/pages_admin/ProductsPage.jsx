@@ -1,4 +1,4 @@
-import { useState , useEffect} from 'react'
+import { useEffect } from 'react'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import ProductModal from '../component_admin/ProductModal';
@@ -13,7 +13,7 @@ const { VITE_BASE_URL , VITE_API_PAHT } = import.meta.env;
 
 export default function ProductPage () {
   const dispatch = useDispatch()
-  const { products : productsState , pagination : paginationState } = useSelector((state)=>state.products)
+  const { products : productsState } = useSelector((state)=>state.products)
 
   // 取得產品資料
   const getProducts = async (page = 1) => {
